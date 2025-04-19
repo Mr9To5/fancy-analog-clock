@@ -1,0 +1,218 @@
+<style type="text/css">
+    @import url("https://fonts.googleapis.com/css2?family=Comfortaa:wght@300;400;500;600;700&display=swap");
+
+    .clock {
+        --clock-size: 240px;
+        width: var(--clock-size);
+        height: var(--clock-size);
+        font-family: "Comfortaa", sans-serif;
+        margin: auto;
+        border-radius: 50%;
+        position: relative;
+        background: #111;
+        border: 5px solid #333;
+        box-shadow: 0 0 10px rgba(0, 255, 0, 0.2);
+    }
+
+    .spike {
+        z-index: 5;
+        position: absolute;
+        width: 4px;
+        height: 0.5px;
+        background: #fff9;
+        line-height: 10px;
+        transform-origin: 50%;
+        inset: 0;
+        margin: auto;
+        font-style: normal;
+        transform: rotate(var(--rotate)) translateX(var(--dail-size));
+    }
+
+    .spike:nth-child(5n + 1) {
+        box-shadow: -3px 0 #fff9;
+    }
+
+    .spike:nth-child(5n + 1):after {
+        content: attr(data-i);
+        position: absolute;
+        right: 11px;
+        top: -5px;
+        transition: 1s linear;
+        transform: rotate(calc(var(--dRotate) - var(--rotate)));
+        color: #fff;
+        font-weight: bold;
+        font-size: 0.7em;
+    }
+
+    .seconds {
+        --dail-size: calc((var(--clock-size) / 2) - 12px);
+        font-weight: 800;
+        font-size: 0.7em;
+        color: white;
+        transform: rotate(calc(-1 * var(--dRotate)));
+        position: absolute;
+        inset: 0;
+        margin: auto;
+    }
+
+    .minutes {
+        --dail-size: calc((var(--clock-size) / 2) - 32.5px);
+        position: absolute;
+        inset: 0;
+        color: white;
+        font-size: 0.8em;
+        transform: rotate(calc(-1 * var(--dRotate)));
+        margin: auto;
+    }
+
+    .hour {
+        font-size: 35px;
+        font-weight: 900;
+        position: absolute;
+        color: white;
+        left: calc(50% - 30px); /* 30 Pixel nach links verschoben */
+        top: 50%;
+        transform: translateY(-50%);
+    }
+
+    .minute {
+        z-index: 10;
+        font-size: 18px;
+        font-weight: 900;
+        position: absolute;
+        background: transparent;
+        color: white;
+        right: calc(var(--clock-size) / 3.25);
+        top: 50%;
+        transform: translateY(-50%);
+    }
+
+    .minute:after {
+        content: "";
+        position: absolute;
+        border: 1px solid #29ff08;
+        border-right: none;
+        height: 25px;
+        left: -5px;
+        top: 50%;
+        border-radius: 25px 0 0 25px;
+        width: calc(var(--clock-size) / 2.4);
+        transform: translateY(-50%);
+    }
+
+    .second{
+        z-index: 10;
+        font-size: 0.9em;
+        font-weight: 900;
+        position: absolute;
+        background: transparent;
+        color: white;
+        right: calc(var(--clock-size) / 4.00);
+        top: 50%;
+        transform: translateY(-50%);
+    }
+
+    /* Hour markers */
+    .hour-markers {
+        position: absolute;
+        inset: 0;
+    }
+
+    .hour-marker {
+        position: absolute;
+        width: 2px;
+        height: 10px;
+        background: #29ff08;
+        left: 50%;
+        top: 5px;
+        transform-origin: 50% calc(var(--clock-size) / 2);
+        transform: translateX(-50%) rotate(var(--rotate));
+    }
+</style>
+
+<main class="clock">
+    <div class="seconds"></div>
+    <div class="minutes"></div>
+    <div class="minute"></div>
+    <div class="hour"></div>
+    <div class="second"></div>
+</main>
+
+<script type="text/javascript">
+    const seconds = document.querySelector('.seconds');
+    const minutes = document.querySelector('.minutes');
+    const minute = document.querySelector('.minute');
+    const hour = document.querySelector('.hour');
+    const second = document.querySelector('.second');
+    const clockSize = getComputedStyle(document.querySelector('.clock')).getPropertyValue('--clock-size').slice(0, -2);
+
+    // Create spikes
+    for(let s = 0; s < 60; s++) {
+        const mSpikEl = document.createElement('i');
+        const sSpikEl = document.createElement('i');
+
+        mSpikEl.className = 'spike';
+        sSpikEl.className = 'spike';
+
+        mSpikEl.style = `--rotate:${6 * s}deg`;
+        sSpikEl.style = `--rotate:${6 * s}deg`;
+        mSpikEl.style.setProperty('--dail-size', `${(clockSize / 2) - (clockSize * 0.135)}px`);
+        sSpikEl.style.setProperty('--dail-size', `${(clockSize / 2) - (clockSize * 0.05)}px`);
+
+
+        // Only show numbers at 5-minute intervals (hour markers)
+        if (s % 5 === 0) {
+            const hourNumber = s === 0 ? '00' : pad(s/5 * 5, 2);
+            mSpikEl.setAttribute('data-i', hourNumber);
+            sSpikEl.setAttribute('data-i', hourNumber);
+        }
+
+        seconds.append(sSpikEl);
+        minutes.append(mSpikEl);
+    }
+
+    // Create hour markers
+    const hourMarkers = document.createElement('div');
+    hourMarkers.className = 'hour-markers';
+    for (let i = 0; i < 12; i++) {
+        const hourMarker = document.createElement('div');
+        hourMarker.className = 'hour-marker';
+        hourMarker.style = `--rotate:${i * 30}deg`;
+        hourMarkers.appendChild(hourMarker);
+    }
+    document.querySelector('.clock').appendChild(hourMarkers);
+
+    function pad(num, size) {
+        num = num.toString();
+        while (num.length < size) num = "0" + num;
+        return num;
+    }
+
+    function getTime() {
+        const date = new Date();
+        const h = date.getHours();
+        const m = date.getMinutes();
+        const s = date.getSeconds();
+
+        // Convert to 12-hour format
+        // const displayHour = h > 12 ? h - 12 : h;
+        const displayHour = h;
+        hour.textContent = displayHour < 10 ? '0' + displayHour : displayHour;
+        minute.textContent = m < 10 ? '0' + m : m;
+
+        // Calculate angles
+        const secondAngle = s * 6;
+        const minuteAngle = m * 6 + (s / 10);
+        const hourAngle = (displayHour % 12) * 30 + (m / 2);
+
+        // Apply rotations
+        seconds.style.setProperty('--dRotate', `${secondAngle}deg`);
+        minutes.style.setProperty('--dRotate', `${minuteAngle}deg`);
+
+        second.textContent = pad(s, 2);
+    }
+
+    // Initialize and update every second
+    getTime();
+    setInterval(getTime, 1000);
+</script>
