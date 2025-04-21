@@ -124,7 +124,7 @@
         height: 10px;
         background: #29ff08;
         left: 50%;
-        top: 5px;
+        top: -5px;
         transform-origin: 50% calc(var(--clock-size) / 2);
         transform: translateX(-50%) rotate(var(--rotate));
     }
